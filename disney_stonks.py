@@ -6,14 +6,9 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
-# In[3]:
-
-
 # importing Disney stock history, Jan. 4, 2010 to July 13, 2020
-dis = pd.read_csv('dis.csv',parse_dates=['Date'])
-
-
-# In[4]:
+dis = pd.read_csv('DIS.csv',parse_dates=['Date'])
+amc = pd.read_csv('AMC.csv',parse_dates=['Date'])
 
 
 # compiling Disney releases, including Marvel Studios
@@ -31,9 +26,6 @@ releases = pd.concat([releases,marvel],ignore_index=True)
 releases.sort_values('US_Release',inplace=True,ignore_index=True)
 
 
-# In[5]:
-
-
 # plotting Disney stock price over the past decade, with vertical lines representing "major" Disney releases
 # (Disney, Pixar, Marvel)
 # plt.plot(dis.Date,dis.Close,'k-')
@@ -46,16 +38,14 @@ releases.sort_values('US_Release',inplace=True,ignore_index=True)
 # plt.show()
 
 
-# In[6]:
-
-
-# calculating days until major Disney release
-def nearest(items, target):
-    return min(items, key = lambda x: abs(x-target))
+# calculating days until major Disney release and stock price 1 week later
+# def nearest(items, target):
+#     return min(items, key = lambda x: abs(x-target))
 # dis['Disneyless_Days'] = [releases.loc[releases.US_Release>date].US_Release.iloc[0] - date for date in dis.Date]
 
 dis['days_until'] = np.nan
 dis['days_since'] = np.nan
+dis['three_weeks'] = np.nan
 for ind in dis.index:
     try:
         until = releases.loc[releases.US_Release > dis.loc[ind,'Date']].US_Release.iloc[0] - dis.loc[ind,'Date']
@@ -69,10 +59,36 @@ for ind in dis.index:
         dis.loc[ind,'days_since'] = since
     except:
         pass
+    try:
+        dis.loc[ind,'three_weeks'] = dis.loc[ind+21,'Open']
+    except:
+        pass
 
 
-
-# In[80]:
+# building the AMC dataframe from the DIS data
+try:
+    dis['Date'] = dis['Date'].map(dt.datetime.toordinal)
+except:
+    pass
+try:
+    amc['Date'] = amc['Date'].map(dt.datetime.toordinal)
+except:
+    pass
+df = dis.loc[dis.Date>=amc.Date.iloc[0]].reset_index()
+amc['dis_open'] = df.Open
+amc['days_until'] = df.days_until
+amc['days_since'] = df.days_since
+amc['three_weeks'] = np.nan
+amc['dis_three_weeks'] = np.nan
+for ind in amc.index:
+    try:
+        amc.loc[ind,'three_weeks'] = amc.loc[ind+21,'Open']
+    except:
+        pass
+    try:
+        amc.loc[ind,'dis_three_weeks'] = dis.loc[ind+21,'Open']
+    except:
+        pass
 
 
 # defining dataset independent & dependent variables
@@ -80,13 +96,10 @@ try:
     dis['Date'] = dis['Date'].map(dt.datetime.toordinal)
 except:
     pass
-# dataset = dis.loc[dis.days_until<=7].loc[dis.days_since<=7]
-dataset = dis
-x = dataset.dropna().drop(['Close','Adj Close'],axis=1)
-y = dataset.dropna()['Close']
-
-
-# In[81]:
+dataset = amc
+x = dataset.dropna().drop(['Low','Volume','Close','Adj Close','three_weeks','dis_three_weeks','dis_open','days_until','days_since'],axis=1)
+y = dataset.dropna()['three_weeks']
+# print(len(x),len(y))
 
 
 # train/test split and converting dates into numerical values
@@ -98,31 +111,17 @@ x_test = x.iloc[split:]
 y_test = y.iloc[split:]
 
 
-# In[82]:
-
-
 # creating and fitting model
 lm = LinearRegression()
 model = lm.fit(x_train,y_train)
 
 
-# In[83]:
-
-
 predictions = lm.predict(x_test)
+# predictions
 
 
-# In[89]:
-
-
-plt.plot(dis.Date,dis.Close,'b--')
-plt.plot(x_test.Date,predictions,'r.')
+plt.plot(amc.Date,amc.Close,'b--')
+plt.plot(dataset.dropna().Date.iloc[split:],predictions,'r.')
 plt.show()
 print('Score:',model.score(x_test,y_test))
-
-
-# In[ ]:
-
-
-
 
