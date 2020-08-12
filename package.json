@@ -1,0 +1,19 @@
+{
+  "name": "@nelauria/stonk-predict",
+  "version": "1.0.0",
+  "description": "A small lil app that uses machine learning to predict general stock movements",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "publishConfig": { "registry": "https://npm.pkg.github.com/nelauria/" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nelauria/stonk-predict"
+  },
+  "keywords": [
+    "stock-price-prediction"
+  ],
+  "author": "Lana Elauria",
+  "license": "ISC"
+}
