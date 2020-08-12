@@ -1,2 +1,2 @@
-# disney stonks
-Learning linear regression machine learning by modeling Disney stock changes in relation to the company's theatrical releases
+# stonk predict
+Learning linear regression and long-short term memory machine learning by building a stock movement prediction app
