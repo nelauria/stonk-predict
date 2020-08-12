@@ -4,6 +4,7 @@
   "description": "A small lil app that uses machine learning to predict general stock movements",
   "main": "index.js",
   "scripts": {
+    "start": "stonk_predict.py",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "publishConfig": { "registry": "https://npm.pkg.github.com/nelauria/" },
