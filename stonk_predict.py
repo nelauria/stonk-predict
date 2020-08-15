@@ -75,27 +75,33 @@ def split_scale(stonk_df,smooth_window,EMA_interval=21):
     return train_scaled, test_scaled
 
 
+# formatting the Streamlit webpage
 st.title("Stonk Predictions, by Lana Elauria")
 st.write("DISCLAIMER: This is a personal project for me, please don't blindly take these predictions at face value.")
 st.write("Input the stock code you'd like to analyze and how many days into the future you'd like to look, "
          "and this app will give a general prediction of the stock movements!")
 st.write("This app takes data from Yahoo! Finance.")
 
-
 stonk_code = st.sidebar.text_input("What stock would you like to analyze? Default is AMC.","AMC")
-stonks = get_stonk(stonk_code)
 if st.sidebar.checkbox('Show stock data'):
     st.write(f'{stonk_code} stock data:\n',stonks)
+days_ahead = st.sidebar.text_input("How many days into the future would you like to predict? Default is 30.", 30)
+try:
+    days_ahead = int(days_ahead)
+except:
+    raise Exception('You must input an integer.')
 
 
+st.write("The graph below is made to check the predictions of the neural network made by this app. "
+         "Compare general trends, and decide for yourself if the app is accurate enough for your use.")
+
+stonks = get_stonk(stonk_code)
 train_scaled, test_scaled_full = split_scale(stonks,smooth_window=500)
 # train_scaled
 # test_scaled_full
 
 
 # defining how far ahead user wants to predict
-days_ahead = st.sidebar.text_input("How many days into the future would you like to predict? Default is 30.",30)
-days_ahead = int(days_ahead)
 dfs = [train_scaled,test_scaled_full]
 for i in [0,1]:
     df = dfs[i]
@@ -139,8 +145,6 @@ model_lstm.evaluate(x_test,y_test,verbose=1)
 
 # checking the model's predictions; taking data from two months previous and predicting price movements for last month
 # made to compare to real-world data in the last month
-st.write("The graph below is made to check the predictions of the neural network made by this app. "
-         "Compare general trends, and decide for yourself if the app is accurate enough for your use.")
 check_data = test_scaled.iloc[-2*days_ahead:-days_ahead]
 check_data.drop(f'{days_ahead}_days',axis=1,inplace=True)
 x_check = np.reshape(check_data.values,(check_data.values.shape[0],check_data.values.shape[1],1))
