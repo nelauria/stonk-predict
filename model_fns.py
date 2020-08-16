@@ -40,3 +40,28 @@ def split_scale(stonk_df, smooth_window, EMA_interval=21):
     test_scaled.set_index(test_scaled.index + train_scaled.index[-1] + 1, inplace=True)
     return train_scaled, test_scaled
 
+def define_target(train_df,test_df,num_days):
+    # making a column in each DataFrame with the Open from {num_days} ahead
+    dfs = [train_df,test_df]
+    for i in range(len(dfs)):
+        df = dfs[i]
+        for ind in df.index:
+            try:
+                df.loc[ind, f'{num_days}_days'] = df.loc[ind + num_days, 'Open']
+            except:
+                pass
+
+
+    # defining inputs & outputs
+    x_train = train_df.dropna().drop(f'{num_days}_days', axis=1)
+    y_train = train_df.dropna().loc[:, f'{num_days}_days']
+    x_test = test_df.dropna().drop(f'{num_days}_days', axis=1)
+    y_test = test_df.dropna().loc[:, f'{num_days}_days']
+
+
+    # reshaping inputs & outputs for LSTM model
+    x_train = np.reshape(x_train.values, (x_train.values.shape[0], x_train.values.shape[1], 1))
+    x_test = np.reshape(x_test.values, (x_test.values.shape[0], x_test.values.shape[1], 1))
+    y_train, y_test = y_train.values, y_test.values
+
+    return x_train, y_train, x_test, y_test
