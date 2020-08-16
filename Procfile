@@ -1,1 +1,1 @@
-web: streamlit run stonk_predict.py
+web: sh setup.sh && streamlit run stonk_predict.py
